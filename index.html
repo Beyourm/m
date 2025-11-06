@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام محاسبة متقدم (عملاء، ضريبة، آجل)</title>
+<link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+
+<div class="container">
+    <h1>نظام محاسبة متقدم (المخزون، الفواتير، الضريبة، العملاء)</h1>
+
+    <div class="tab-header">
+        <button class="tab-button active" onclick="openTab('inventory')">📦 المخزون</button>
+        <button class="tab-button" onclick="openTab('sales')">💰 المبيعات والفواتير</button>
+        <button class="tab-button" onclick="openTab('physicalCount')">📝 جرد المخزون</button> <button class="tab-button" onclick="openTab('customers')">👥 العملاء</button>
+        <button class="tab-button" onclick="openTab('reports')">📈 التقارير المالية</button>
+    </div>
+
+    <div id="inventory" class="tab-content active">
+        <h2>إضافة / تعديل الأصناف</h2>
+        <div class="form-grid">
+            <input type="text" id="itemName" placeholder="اسم الصنف">
+            <input type="number" id="itemPriceSale" placeholder="سعر البيع">
+            <input type="number" id="itemPricePurchase" placeholder="سعر الشراء">
+            <input type="number" id="itemQty" placeholder="الكمية">
+            <select id="itemUnit" onchange="togglePackageField()">
+                <option value="حبة">حبة / قطعة</option>
+                <option value="كرتون">كرتون</option>
+                <option value="باكت">باكت (وحدة رئيسية)</option>
+                <option value="حبة">حبة</option>
+           
+            </select>
+            <div id="packageFieldContainer" style="display: none; grid-column: 1 / -1; border: 1px dashed #ced4da; padding: 10px; border-radius: 6px;">
+                 <label style="font-weight: bold; color: #007bff; display: block; margin-bottom: 5px;">عوامل التحويل (إذا كانت الوحدة كرتون)</label>
+                 <div class="form-grid-conversion">
+                    <input type="number" id="packPerCarton" placeholder="عدد الباكتات في الكرتون" min="1">
+                    <input type="number" id="unitsPerPack" placeholder="عدد الحبات في الباكت" min="1">
+                </div>
+             </div>
+            <button onclick="addItem()">إضافة الصنف للمخزون</button>
+        </div>
+
+        <h2 style="margin-top: 30px;">قائمة الأصناف الحالية</h2>
+        <div class="search-export-bar">
+            <input type="text" id="inventorySearch" placeholder="بحث باسم/سعر/وحدة" oninput="renderTable()">
+            <button onclick="exportInventoryToCSV()" class="action-btn export-btn">تصدير المخزون ⬇️</button>
+        </div>
+        <table id="itemsTable">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>سعر البيع</th>
+                    <th>سعر الشراء</th>
+                    <th>الكمية / العبوة</th> <th>إجمالي القيمة (شراء)</th>
+                    <th>تاريخ التعديل</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+        </table>
+    </div>
+
+    <div id="sales" class="tab-content">
+        <h2>إنشاء فاتورة مبيعات جديدة</h2>
+        <div class="invoice-details form-grid-2-cols">
+            <select id="clientNameSelect" onchange="checkClientStatus()">
+                <option value="نقد">عميل نقدي</option>
+                </select>
+            <input type="date" id="invoiceDate" placeholder="تاريخ الفاتورة">
+            <select id="paymentStatus" onchange="checkClientStatus()">
+                <option value="نقد">حالة الدفع: نقداً</option>
+                <option value="آجل">حالة الدفع: آجل</option>
+            </select>
+            <input type="number" id="vatRate" placeholder="نسبة الضريبة (%)" value="0" min="0" oninput="renderCurrentInvoiceItemsTable()">
+        </div>
+
+        <div class="invoice-item-selection form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
+            <select id="invoiceItemSelect">
+                <option value="">اختر صنف للبيع</option>
+            </select>
+             <select id="invoiceSellUnit" style="min-width: 60px;">
+                <option value="">الوحدة</option>
+            </select>
+            <input type="number" id="invoiceItemQty" placeholder="الكمية" min="1">
+            <button onclick="addItemToInvoice()" style="margin: 0;">أضف إلى الفاتورة</button>
+        </div>
+        
+        <table id="currentInvoiceTable">
+            <thead>
+                <tr><th>الصنف</th><th>سعر الوحدة</th><th>الكمية</th><th>الإجمالي الفرعي</th><th>حذف</th></tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot id="currentInvoiceTotal"></tfoot>
+        </table>
+
+        <div class="search-export-bar" style="margin-top: 20px;">
+            <input type="number" id="invoiceDiscount" placeholder="الخصم (%)" value="0" min="0" max="100" oninput="renderCurrentInvoiceItemsTable()" style="min-width: 100px;">
+            <button onclick="finalizeInvoice()" class="save-btn" style="flex-grow: 1;">إتمام وإصدار الفاتورة</button>
+        </div>
+
+        <h2 style="margin-top: 30px;">قائمة الفواتير السابقة</h2>
+        <div class="search-export-bar">
+            <input type="text" id="invoicesSearch" placeholder="بحث بالرقم/العميل/الإجمالي" oninput="renderInvoicesList()">
+            <button onclick="exportInvoicesToCSV()" class="action-btn export-btn">تصدير الفواتير ⬇️</button>
+        </div>
+        <table id="invoicesListTable">
+            <thead>
+                <tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الحالة</th><th>الإجمالي النهائي</th><th>عرض</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="physicalCount" class="tab-content">
+        <h2>📝 جرد ومطابقة المخزون الفعلي</h2>
+        <p class="guide-text" style="color: #6c757d; border: 1px dashed #ced4da; padding: 10px; border-radius: 6px; margin-bottom: 20px;">
+            قم بإدخال الكمية **الفعلية** لكل صنف. سيظهر لك الفرق بين الكمية المسجلة في النظام والكمية الفعلية. اضغط على "تحديث المخزون" لاعتماد الجرد.
+        </p>
+        
+        <div class="search-export-bar" style="margin-bottom: 15px;">
+            <input type="text" id="countSearch" placeholder="بحث باسم الصنف..." oninput="renderPhysicalCountTable()">
+            <button onclick="updateInventoryAfterCount()" class="save-btn" style="flex-grow: 1; background-color: #ff8c00;">تحديث المخزون حسب الجرد</button>
+        </div>
+
+        <table id="physicalCountTable">
+            <thead>
+                <tr>
+                    <th>اسم الصنف</th>
+                    <th>وحدة المخزون</th>
+                    <th>الكمية المسجلة (النظام)</th>
+                    <th>الكمية الفعلية (جرد)</th>
+                    <th>الفرق (فائض / عجز)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div id="customers" class="tab-content">
+        <h2>إضافة عميل جديد</h2>
+        <div class="form-grid">
+            <input type="text" id="customerName" placeholder="اسم العميل الكامل">
+            <input type="text" id="customerPhone" placeholder="رقم الهاتف (اختياري)">
+            <input type="text" id="customerAddress" placeholder="العنوان (اختياري)">
+            <button onclick="addCustomer()" style="grid-column: span 3;">إضافة عميل</button>
+        </div>
+
+        <h2 style="margin-top: 30px;">قائمة العملاء المسجلين</h2>
+        <table id="customersTable">
+            <thead>
+                <tr><th>الاسم</th><th>الهاتف</th><th>العنوان</th><th>تاريخ الإضافة</th><th>إجراء</th></tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div id="reports" class="tab-content">
+        <h2>📊 تقارير الأداء والأرباح</h2>
+        <div class="form-grid-2-cols" style="margin-bottom: 25px;">
+            <label>من تاريخ:
+                <input type="date" id="reportFromDate" onchange="renderReports()">
+            </label>
+            <label>إلى تاريخ:
+                <input type="date" id="reportToDate" onchange="renderReports()">
+            </label>
+        </div>
+
+        <table id="financialReportsTable">
+            <thead>
+                <tr><th>المؤشر المالي</th><th>القيمة الإجمالية</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>إجمالي الإيرادات (قبل الضريبة)</td><td id="totalRevenueBeforeTax">0.00</td></tr>
+                <tr><td>إجمالي الضريبة المحصلة (VAT)</td><td id="totalVAT">0.00</td></tr>
+                <tr><td>إجمالي الخصومات الممنوحة</td><td id="totalDiscounts">0.00</td></tr>
+                <tr><td>إجمالي تكلفة البضاعة المباعة (COGS)</td><td id="totalCogs">0.00</td></tr>
+                <tr style="font-weight: bold;">
+                    <td>صافي الربح الإجمالي</td>
+                    <td id="netProfit">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 25px;">ملخص المبيعات حسب اليوم</h3>
+        <table id="dailySalesTable">
+            <thead>
+                <tr><th>التاريخ</th><th>إجمالي المبيعات (شامل الضريبة)</th><th>صافي الربح اليومي</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="script.js"></script> 
+
+</body>
+</html>

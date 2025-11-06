@@ -1,0 +1,178 @@
+/* ------------------- BASE STYLES ------------------- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    padding: 10px; 
+    direction: rtl; 
+    line-height: 1.6;
+}
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    padding: 15px; 
+}
+h1 {
+    text-align: center;
+    color: #007bff;
+    border-bottom: 3px solid #007bff;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    font-size: 1.6em; 
+}
+
+/* ------------------- TABS ------------------- */
+.tab-header {
+    display: flex;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 20px;
+    overflow-x: auto; 
+    white-space: nowrap; 
+}
+.tab-button {
+    flex-shrink: 0;
+    padding: 10px 15px; 
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #6c757d;
+    transition: color 0.3s, border-bottom 0.3s;
+}
+.tab-button.active {
+    color: #007bff;
+    border-bottom: 3px solid #007bff;
+}
+.tab-content { display: none; padding: 10px 0; }
+.tab-content.active { display: block; }
+
+/* ------------------- FORMS & INPUTS ------------------- */
+input[type="text"], input[type="number"], input[type="date"], select {
+    padding: 8px; 
+    margin: 5px 0;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 6px; 
+    border: 1px solid #ced4da;
+    font-size: 0.9em;
+}
+button {
+    padding: 8px 12px; 
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.2s;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+button:hover { background-color: #0056b3; }
+.action-btn { margin: 1px; padding: 6px 8px; width: auto !important; font-size: 0.8em; } 
+.delete-btn { background-color: #dc3545; }
+.edit-btn { background-color: #ffc107; color: #343a40; }
+.save-btn { background-color: #28a745; }
+.export-btn { background-color: #008000; }
+
+/* GRID Layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+    gap: 10px; 
+    margin-bottom: 15px;
+}
+/* تعديل الكود لتفادي مشاكل التصميم عند إضافة حقول جديدة في نفس السطر */
+.form-grid-conversion {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+    gap: 10px;
+    padding-top: 10px;
+}
+.form-grid button {
+    grid-column: 1 / -1; 
+    margin-top: 5px;
+}
+.form-grid-2-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* ------------------- TABLES ------------------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.85em; 
+}
+th, td {
+    padding: 8px 5px; 
+    border: 1px solid #dee2e6;
+}
+th {
+    background-color: #e9ecef;
+    color: #495057;
+}
+tfoot th {
+    background-color: #007bff;
+    color: white;
+}
+
+/* UTILS */
+.search-export-bar {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 10px;
+    flex-wrap: wrap; 
+    gap: 5px; 
+}
+.search-export-bar input { flex-grow: 1; min-width: 120px; }
+.search-export-bar button { width: auto; flex-shrink: 0; }
+
+.low-stock { background-color: #fff3cd !important; }
+
+/* ------------------- MOBILE RESPONSIVENESS (تحسينات إضافية) ------------------- */
+@media (max-width: 600px) {
+    .container { padding: 10px; } 
+    
+    .form-grid, .form-grid-2-cols, .form-grid-conversion {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .form-grid button {
+        grid-column: auto;
+    }
+
+    table { font-size: 0.8em; }
+
+    /* إخفاء الأعمدة غير الحرجة في المخزون */
+    #itemsTable td:nth-child(3), #itemsTable th:nth-child(3), 
+    #itemsTable td:nth-child(5), #itemsTable th:nth-child(5), 
+    #itemsTable td:nth-child(6), #itemsTable th:nth-child(6) { 
+        display: none;
+    }
+    /* إخفاء الأعمدة غير الحرجة في الجرد */
+    #physicalCountTable td:nth-child(2), #physicalCountTable th:nth-child(2) { 
+        display: none;
+    }
+
+    /* إخفاء الأعمدة غير الحرجة في قائمة الفواتير */
+    #invoicesListTable td:nth-child(2), #invoicesListTable th:nth-child(2) { 
+        display: none;
+    }
+    
+    /* إخفاء الأعمدة غير الحرجة في العملاء */
+    #customersTable td:nth-child(3), #customersTable th:nth-child(3), 
+    #customersTable td:nth-child(4), #customersTable th:nth-child(4) { 
+        display: none;
+    }
+
+    .action-btn { padding: 5px 6px; font-size: 0.7em; }
+    .search-export-bar { flex-direction: column; align-items: stretch; }
+    .search-export-bar input, .search-export-bar button { width: 100%; margin-bottom: 5px; }
+}
